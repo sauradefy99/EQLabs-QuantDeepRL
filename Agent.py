@@ -25,10 +25,10 @@ from collections import deque
 
 class Agent:
     def __init__(self, time_steps, feature_count, is_eval=False, model_name=""):
-        self.time_steps = time_steps  # period 
+        self.time_steps = time_steps 
         self.feature_count = feature_count
-        self.action_size = 3  # no_action, buy, sell
-        self.memory = deque(maxlen=256)  # no need to be high at stock data .. but try 128,256,512   
+        self.action_size = 3  #
+        self.memory = deque(maxlen=256)   
         self.inventory = []
         self.model_name = model_name
         self.is_eval = is_eval
@@ -42,7 +42,7 @@ class Agent:
         self.model = load_model("models/" + model_name + ".h5") if is_eval else self._model()
         
     def _model(self):
-        #ADD DROPUT, TRY BATCHNORM AND EXPERIMENT DIFF SHAPES
+        #ADD DROPOUT, TRY BATCHNORM AND EXPERIMENT DIFF SHAPES
         feature_input = Input(shape=(self.time_steps, self.feature_count), name="Market_inputs")
         lstm = LSTM(32, return_sequences=True, activation="relu")(feature_input)
         flattened_features = LSTM(16, return_sequences=False, activation="relu")(lstm)
@@ -72,8 +72,8 @@ class Agent:
                 target = reward + self.gamma*np.amax(self.model.predict(next_state)[0])
             target_f = self.model.predict(state)
             target_f[0][action] = target
-            states0.append(state[0])  # modified state, only first , market_state
-            states1.append(state[1])  # position_state, added as a list 
+            states0.append(state[0])   
+            states1.append(state[1])  # added position_state as a list 
             targets.append(target_f)
         self.model.fit([np.vstack(states0), np.vstack(states1)], [np.vstack(targets)], epochs=1, verbose=0)
         if self.epsilon>self.epsilon_min:
