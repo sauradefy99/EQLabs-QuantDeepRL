@@ -1,0 +1,25 @@
+version: "2"
+
+services:
+  streamer:
+    build:
+      context: ./streamers
+      dockerfile: Dockerfile
+    links:
+      - rabbitmq
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:alpine
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+
+  redis:
+    image: redis:alpine
+    hostname: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
