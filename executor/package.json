@@ -1,0 +1,16 @@
+{
+  "name": "eq-trader-executor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.5.5",
+    "ccxt": "^1.22.84",
+    "winston": "^3.2.1"
+  }
+}

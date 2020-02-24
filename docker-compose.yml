@@ -3,7 +3,7 @@ version: '3'
 services:
   streamer-binance:
     build:
-      context: ./streamers
+      context: ./streamer
       dockerfile: Dockerfile
     links:
       - rabbitmq
@@ -18,7 +18,7 @@ services:
 
   streamer-kraken:
     build:
-      context: ./streamers
+      context: ./streamer
       dockerfile: Dockerfile
     links:
       - rabbitmq
@@ -30,6 +30,23 @@ services:
       - EXCHANGE=kraken
       - WEBSOCKET=false
       - RABBIT_MQ_ADDR=rabbitmq:5672
+
+  executor-binance:
+    build:
+      context: ./executor
+      dockerfile: Dockerfile
+    links:
+      - rabbitmq
+      - redis
+    restart: on-failure
+    container_name: eq-trader-executor-binance
+    environment:
+      - MARKET_ID=BTCETH
+      - NODE_ENV=production
+      - EXCHANGE=binance
+      - WEBSOCKET=true
+      - RABBIT_MQ_ADDR=rabbitmq:5672
+      - REDIS_ADDR=redis:6379
 
   rabbitmq:
     image: rabbitmq:alpine
