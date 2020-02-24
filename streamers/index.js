@@ -1,35 +1,41 @@
 const amqp = require('amqplib/callback_api');
-const ccxt = require('ccxt');
+const ccxws = require("ccxws");
+const binance = new ccxws.binance();
+let rabbitmq;
 
-(async function () {
-  const binance  = new ccxt.binance({ enableRateLimit: true })
-  const orderBook = await binance.fetchL2OrderBook()
+const queue = "BINANCE"
 
-  amqp.connect('amqp://rabbitmq:5672', function(error0, connection) {});
-  amqp.connect('amqp://rabbitmq:5672', function(error0, connection) {
+const market = {
+  id: "ETHBTC",
+  base: "ETH",
+  quote: "BTC",
+};
+
+amqp.connect('amqp://localhost:5672', (error0, connection) => {
   if (error0) {
     throw error0;
   }
-  connection.createChannel(function(error1, channel) {});
-  });
-  amqp.connect('amqp://rabbitmq:5672', function(error0, connection) {
-    if (error0) {
-      throw error0;
+  connection.createChannel((error1, channel) => {
+    if (error1) {
+      throw error1;
     }
-    connection.createChannel(function(error1, channel) {
-      if (error1) {
-        throw error1;
-      }
-      const queue = 'hello';
-      const msg = 'Hello world';
 
-      channel.assertQueue(queue, {
-        durable: false
-      });
-
-      channel.sendToQueue(queue, Buffer.from(msg));
-      console.log(" [x] Sent %s", msg);
+    channel.assertQueue(queue, {
+      durable: false
     });
+
+    rabbitmq = channel;
   });
-})
+});
+
+binance.on("trade", trade => {
+  console.log(trade);
+  rabbitmq.sendToQueue(queue, Buffer.from(JSON.stringify(trade)));
+});
+binance.on("l2snapshot", snapshot => {
+  console.log(snapshot);
+  rabbitmq.sendToQueue(queue, Buffer.from(JSON.stringify(snapshot)));
+});
+binance.subscribeTrades(market);
+binance.subscribeLevel2Snapshots(market);
 

@@ -11,6 +11,7 @@
   "dependencies": {
     "amqplib": "^0.5.5",
     "ccxt": "^1.22.84",
+    "ccxws": "^0.29.4",
     "nodemon": "^2.0.2"
   }
 }
