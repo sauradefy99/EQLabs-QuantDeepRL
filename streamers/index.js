@@ -3,7 +3,10 @@ const ccxws = require("ccxws");
 const binance = new ccxws.binance();
 let rabbitmq;
 
-const queue = "BINANCE"
+const queue = process.env.EXCHANGE !== undefined ? process.env.EXCHANGE : "binance";
+const rabbitmqAddr = process.env.RABBIT_MQ_ADDR !== undefined ? process.env.RABBIT_MQ_ADDR : 'rabbitmq:5672';
+
+console.log(queue, rabbitmqAddr);
 
 const market = {
   id: "ETHBTC",
@@ -11,7 +14,7 @@ const market = {
   quote: "BTC",
 };
 
-amqp.connect('amqp://localhost:5672', (error0, connection) => {
+amqp.connect('amqp://' + rabbitmqAddr, (error0, connection) => {
   if (error0) {
     throw error0;
   }

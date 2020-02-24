@@ -14,4 +14,4 @@ ADD index.js /home/node/app/index.js
 
 WORKDIR /home/node/app
 
-RUN ["node", "index.js"]
+CMD ["node", "index.js"]

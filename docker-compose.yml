@@ -1,7 +1,7 @@
 version: "2"
 
 services:
-  streamer:
+  streamer-binance:
     build:
       context: ./streamers
       dockerfile: Dockerfile
@@ -9,6 +9,21 @@ services:
       - rabbitmq
     depends_on:
       - rabbitmq
+    environment:
+      - EXCHANGE=binance
+      - RABBIT_MQ_ADDR=rabbitmq:5672
+
+  streamer-bitmex:
+    build:
+      context: ./streamers
+      dockerfile: Dockerfile
+    links:
+      - rabbitmq
+    depends_on:
+      - rabbitmq
+    environment:
+      - EXCHANGE=bitmex
+      - RABBIT_MQ_ADDR=rabbitmq:5672
 
   rabbitmq:
     image: rabbitmq:alpine
