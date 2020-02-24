@@ -1,16 +1,17 @@
 FROM node:alpine as builder
 
-COPY ../lib/package.json /home/node/app/package.json
-COPY ../lib/package-lock.json /home/node/app/package-lock.json
+COPY ./package.json /home/node/app/package.json
+COPY ./package-lock.json /home/node/app/package-lock.json
 
 WORKDIR /home/node/app
 
 RUN npm install
 
-FROM node:alpine as production
+FROM node:alpine
 
 COPY --from=builder /home/node/app/node_modules /home/node/app/node_modules
-ADD index.js /home/node/app/index.js
+ADD ./lib.js /home/node/app/lib.js
+ADD ./index.js /home/node/app/index.js
 
 WORKDIR /home/node/app
 
