@@ -68,7 +68,11 @@ class L2Streamer {
           }
 
           channel.assertQueue(this.queue, {
-            durable: false
+            autoDelete: false,
+            durable: false,
+            arguments: {
+              'x-message-ttl': 20000
+            }
           })
 
           this.logger.info('Successfully created a message queue: ' + this.queue)
