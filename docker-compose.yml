@@ -11,10 +11,10 @@ services:
     container_name: eq-trader-streamer-binance
     environment:
       - MARKET_ID=BTCETH
-      - NODE_ENV=production
+      - NODE_ENV=development
       - EXCHANGE=binance
       - WEBSOCKET=true
-      - RABBIT_MQ_ADDR=rabbitmq:5672
+      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
 
   streamer-kraken:
     build:
@@ -25,11 +25,11 @@ services:
     restart: on-failure
     container_name: eq-trader-streamer-kraken
     environment:
-      - MARKET_ID=BTC/ETH
-      - NODE_ENV=production
+      - MARKET_ID=ETH/BTC
+      - NODE_ENV=development
       - EXCHANGE=kraken
       - WEBSOCKET=false
-      - RABBIT_MQ_ADDR=rabbitmq:5672
+      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
 
   executor-binance:
     build:
@@ -42,16 +42,32 @@ services:
     container_name: eq-trader-executor-binance
     environment:
       - MARKET_ID=BTCETH
-      - NODE_ENV=production
+      - NODE_ENV=development
       - EXCHANGE=binance
-      - WEBSOCKET=true
-      - RABBIT_MQ_ADDR=rabbitmq:5672
+      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
+      - REDIS_ADDR=redis:6379
+
+  executor-kraken:
+    build:
+      context: ./executor
+      dockerfile: Dockerfile
+    links:
+      - rabbitmq
+      - redis
+    restart: on-failure
+    container_name: eq-trader-executor-kraken
+    environment:
+      - MARKET_ID=BTCETH
+      - NODE_ENV=development
+      - EXCHANGE=kraken
+      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
       - REDIS_ADDR=redis:6379
 
   rabbitmq:
     image: rabbitmq:alpine
     hostname: rabbitmq
     container_name: eq-trader-rabbitmq
+    restart: on-failure
     ports:
       - "5672:5672"
 
@@ -59,5 +75,6 @@ services:
     image: redis:alpine
     hostname: redis
     container_name: eq-trader-redis
+    restart: on-failure
     ports:
       - "6379:6379"

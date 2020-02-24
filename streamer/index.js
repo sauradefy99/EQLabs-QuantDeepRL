@@ -8,7 +8,7 @@ const market = {
 }
 const queue = process.env.EXCHANGE !== undefined ? process.env.EXCHANGE : 'binance'
 const logLevel = process.env.NODE_ENV === 'production' ? 'info' : 'debug'
-const rabbitmqAddr = process.env.NODE_ENV === 'production' ? 'amqp://rabbitmq:5672' : 'amqp://localhost:5672'
+const rabbitmqAddr = process.env.RABBIT_MQ_ADDR !== undefined ? process.env.RABBIT_MQ_ADDR : 'amqp://localhost:5672'
 const websocket = process.env.WEBSOCKET !== 'false'
 
 const streamer = new L2Streamer(queue, rabbitmqAddr, market, logLevel)
