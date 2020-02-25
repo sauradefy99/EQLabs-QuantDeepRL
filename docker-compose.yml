@@ -10,7 +10,7 @@ services:
     restart: on-failure
     container_name: eq-trader-streamer-binance
     environment:
-      - MARKET_ID=BTCETH
+      - MARKET_ID=ETHBTC
       - NODE_ENV=development
       - EXCHANGE=binance
       - WEBSOCKET=true

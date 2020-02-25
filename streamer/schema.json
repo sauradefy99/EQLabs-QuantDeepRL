@@ -24,5 +24,11 @@
   },
   "exchange": {
     "type": "string"
+  },
+  "base": {
+    "type": "string"
+  },
+  "quote": {
+    "type": "string"
   }
 }

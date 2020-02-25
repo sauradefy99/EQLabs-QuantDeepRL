@@ -53,7 +53,9 @@ class L2Streamer {
       return { price: point[0], size: point[1] }
     })
     snapshot.timestamp = Date.now()
-
+    snapshot.quote = this.market.quote;
+    snapshot.base = this.market.base;
+    snapshot.exchange = this.queue;
     if (!validate(snapshot)){
       this.logger.error(validate.errors);
       return false
@@ -67,7 +69,7 @@ class L2Streamer {
   async connectToRabbitMq () {
     return new Promise((resolve, reject) => {
       amqp.connect(this.rabbitMqHostAddr, (error0, connection) => {
-        if (error0) {
+        if (error0 || !connection) {
           this.logger.error('Connection to RabbitMQ failed: ' + error0)
           reject(error0)
         }
