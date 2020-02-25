@@ -40,8 +40,9 @@ services:
       - redis
     restart: on-failure
     container_name: eq-trader-executor-binance
+    env_file: .binancesecrets
     environment:
-      - MARKET_ID=BTCETH
+      - MARKET_ID=ETHBTC
       - NODE_ENV=development
       - EXCHANGE=binance
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
@@ -56,6 +57,7 @@ services:
       - redis
     restart: on-failure
     container_name: eq-trader-executor-kraken
+    env_file: .krakensecrets
     environment:
       - MARKET_ID=BTCETH
       - NODE_ENV=development

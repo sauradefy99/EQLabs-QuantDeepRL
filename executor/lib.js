@@ -12,14 +12,6 @@ createMarketSellOrder (symbol, amount[, params])
 
 class Exchange {
   constructor (exchange, rabbitMqHostAddr, market, logLevel) {
-    this.queue = exchange
-    this.rabbitMqHostAddr = rabbitMqHostAddr
-    this.market = market
-    this.exchange = new ccxt[exchange]({
-      enableRateLimit: true
-    })
-    this.rabbitmq = undefined
-
     this.logger = winston.createLogger({
       level: logLevel || 'info',
       defaultMeta: { service: 'executor-' + exchange },
@@ -29,6 +21,24 @@ class Exchange {
         })
       ]
     })
+
+    this.queue = exchange
+    this.rabbitMqHostAddr = rabbitMqHostAddr
+    this.market = market
+
+    if (!process.env.API_KEY || !process.env.API_SECRET) {
+      throw new Error("No API secrets defined!")
+    }
+
+    this.exchange = new ccxt[exchange]({
+        apiKey: process.env.API_KEY,
+        secret: process.env.API_SECRET,
+        timeout: 30000,
+        enableRateLimit: true,
+    })
+
+    this.rabbitmq = undefined
+
 
     this.logger.info('Executor started on queue: ', this.queue, this.rabbitMqHostAddr)
   }
