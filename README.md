@@ -18,7 +18,7 @@ make down
 ```
 
 ## Data format
-The order book format is defined by `ccxt`, here's an example:
+The order book format is loosely defined by `ccxt`, here's an example:
 ```json
 {
   "exchange": "binance",
@@ -39,3 +39,5 @@ The order book format is defined by `ccxt`, here's an example:
   ],
 }
 ```
+
+Every piece of the puzzle has its message format defined in a `json-schema`, which gets validated before sending to a message queue.
