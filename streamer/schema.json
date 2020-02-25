@@ -1,0 +1,28 @@
+{
+  "bids": [
+    {
+      "price": {
+        "type": "number"
+      },
+      "size": {
+        "type": "number"
+      }
+    }
+  ],
+  "asks": [
+    {
+      "price": {
+        "type": "number"
+      },
+      "size": {
+        "type": "number"
+      }
+    }
+  ],
+  "timestamp": {
+    "type": "integer"
+  },
+  "exchange": {
+    "type": "string"
+  }
+}

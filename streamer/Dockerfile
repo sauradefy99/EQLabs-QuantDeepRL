@@ -10,6 +10,7 @@ RUN npm install
 FROM node:alpine
 
 COPY --from=builder /home/node/app/node_modules /home/node/app/node_modules
+ADD ./schema.json /home/node/app/schema.json
 ADD ./lib.js /home/node/app/lib.js
 ADD ./index.js /home/node/app/index.js
 

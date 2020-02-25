@@ -2,6 +2,14 @@ const amqp = require('amqplib/callback_api')
 const winston = require('winston')
 const ccxt = require('ccxt')
 
+/*
+createOrder (symbol, type, side, amount[, price[, params]])
+createLimitBuyOrder (symbol, amount, price[, params])
+createLimitSellOrder (symbol, amount, price[, params])
+createMarketBuyOrder (symbol, amount[, params])
+createMarketSellOrder (symbol, amount[, params])
+*/
+
 class Exchange {
   constructor (exchange, rabbitMqHostAddr, market, logLevel) {
     this.queue = exchange

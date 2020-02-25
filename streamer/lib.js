@@ -2,6 +2,11 @@ const amqp = require('amqplib/callback_api')
 const winston = require('winston')
 const ccxws = require('ccxws')
 const ccxt = require('ccxt')
+const Ajv = require('ajv');
+
+const ajv = new Ajv()
+const schema = require('./schema.json')
+const validate = ajv.compile(schema)
 
 class L2Streamer {
   constructor (exchange, rabbitMqHostAddr, market, logLevel) {
@@ -48,9 +53,15 @@ class L2Streamer {
       return { price: point[0], size: point[1] }
     })
     snapshot.timestamp = Date.now()
-    const snapshotString = JSON.stringify(snapshot)
-    this.logger.debug('Snapshot received: ' + snapshotString)
-    return Buffer.from(snapshotString)
+
+    if (!validate(snapshot)){
+      this.logger.error(validate.errors);
+      return false
+    } else {
+      const snapshotString = JSON.stringify(snapshot)
+      this.logger.debug('Snapshot received: ' + snapshotString)
+      return Buffer.from(snapshotString)
+    }
   }
 
   async connectToRabbitMq () {
@@ -86,7 +97,10 @@ class L2Streamer {
 
   runWebsocket () {
     this.streamingExchange.on('l2snapshot', snapshot => {
-      this.rabbitmq.sendToQueue(this.queue, this.prepareL2SnapshotForSending(snapshot))
+      const data = this.prepareL2SnapshotForSending(snapshot)
+      if(data) {
+        this.rabbitmq.sendToQueue(this.queue, data)
+      }
     })
     this.streamingExchange.subscribeLevel2Snapshots(this.market)
   }
@@ -95,7 +109,10 @@ class L2Streamer {
     while (true) {
       try {
         const snapshot = await this.exchange.fetchL2OrderBook(this.market.id)
-        this.rabbitmq.sendToQueue(this.queue, this.prepareL2SnapshotForSending(snapshot))
+        const data = this.prepareL2SnapshotForSending(snapshot)
+        if(data) {
+          this.rabbitmq.sendToQueue(this.queue, data)
+        }
       } catch (e) {
         this.logger.error(e)
         throw e
