@@ -1,0 +1,10 @@
+{
+  "operation": {
+    "const": {
+      "$data": "cancel"
+    }
+  },
+  "id": {
+    "type": "string"
+  }
+}

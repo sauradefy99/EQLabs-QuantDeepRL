@@ -1,14 +1,9 @@
 const amqp = require('amqplib/callback_api')
 const winston = require('winston')
 const ccxt = require('ccxt')
-
-/*
-createOrder (symbol, type, side, amount[, price[, params]])
-createLimitBuyOrder (symbol, amount, price[, params])
-createLimitSellOrder (symbol, amount, price[, params])
-createMarketBuyOrder (symbol, amount[, params])
-createMarketSellOrder (symbol, amount[, params])
-*/
+const { cancelOrderSchema, createOrderSchema } = require('./schema')
+const validateCancelOrder = ajv.compile(cancelOrderSchema)
+const validateCreateOrder = ajv.compile(createOrderSchema)
 
 class Exchange {
   constructor (exchange, rabbitMqHostAddr, market, logLevel) {
@@ -80,9 +75,42 @@ class Exchange {
     })
   }
 
+  async parseMessage(msg) {
+    const json = JSON.parse(msg.toString())
+    let validate
+    if (json.operation === "cancel") {
+      validate = validateCancelOrder
+    } else if (json.operation === "create") {
+      validate = validateCreateOrder
+    }
+    if (!validate(json)) {
+      this.logger.error(validate.errors);
+      return false
+    }
+
+    try {
+      switch json.operation {
+        case "cancel":
+          const result = await this.exchange.cancelOrder(json.id)
+          this.logger.info("Order successfully canceled: " + result)
+          // TODO: Remove canceled order from open orders in redis
+          break;
+        case "create":
+          const result = await this.exchange.createOrder(symbol: json.symbol, type: json.orderType, side: json.side, amount: json.amount, price: json.price)
+          this.logger.info("Order successfully created: " + result)
+          // TODO: Save created order to open orders in redis
+          break;
+      }
+    } catch(error) {
+      this.logger.error("Error executing operation " + error)
+    }
+
+    console.log(json)
+  }
+
   run () {
     this.rabbitmq.consume(this.queue, (msg) => {
-      console.log(msg.content.toString())
+      this.parseMessage(msg.content)
     }, {
       noAck: true
     })

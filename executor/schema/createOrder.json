@@ -1,0 +1,42 @@
+{
+  "operation": {
+    "type": "string"
+  },
+  "symbol": {
+    "type": "string"
+  },
+  "orderType": {
+    "oneOf": [
+      {
+        "const": {
+          "$data": "limit"
+        }
+      },
+      {
+        "const": {
+          "$data": "market"
+        }
+      }
+    ]
+  },
+  "side": {
+    "oneOf": [
+      {
+        "const": {
+          "$data": "buy"
+        }
+      },
+      {
+        "const": {
+          "$data": "sell"
+        }
+      }
+    ]
+  },
+  "price": {
+    "type": "number"
+  },
+  "amount": {
+    "type": "number"
+  }
+}
