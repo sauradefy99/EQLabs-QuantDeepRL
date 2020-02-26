@@ -1,7 +1,9 @@
 const amqp = require('amqplib/callback_api')
 const winston = require('winston')
 const ccxt = require('ccxt')
+const Ajv = require('ajv');
 const { cancelOrderSchema, createOrderSchema } = require('./schema')
+const ajv = new Ajv()
 const validateCancelOrder = ajv.compile(cancelOrderSchema)
 const validateCreateOrder = ajv.compile(createOrderSchema)
 
@@ -77,35 +79,38 @@ class Exchange {
 
   async parseMessage(msg) {
     const json = JSON.parse(msg.toString())
-    let validate
+    let validate, result
+    
     if (json.operation === "cancel") {
-      validate = validateCancelOrder
+      validate = validateCancelOrder(json)
     } else if (json.operation === "create") {
-      validate = validateCreateOrder
+      validate = validateCreateOrder(json)
     }
-    if (!validate(json)) {
-      this.logger.error(validate.errors);
+
+    if (!validate) {
+      const error = validate ? validate.errors : "Received order operation is not valid!"
+      this.logger.error(error);
       return false
     }
 
     try {
-      switch json.operation {
+      switch(json.operation) {
         case "cancel":
-          const result = await this.exchange.cancelOrder(json.id)
+          result = await this.exchange.cancelOrder(json.id)
           this.logger.info("Order successfully canceled: " + result)
           // TODO: Remove canceled order from open orders in redis
           break;
         case "create":
-          const result = await this.exchange.createOrder(symbol: json.symbol, type: json.orderType, side: json.side, amount: json.amount, price: json.price)
+          result = await this.exchange.createOrder(json.symbol, json.orderType, json.side, json.amount, json.price)
           this.logger.info("Order successfully created: " + result)
           // TODO: Save created order to open orders in redis
           break;
+        default:
+          return false
       }
     } catch(error) {
       this.logger.error("Error executing operation " + error)
     }
-
-    console.log(json)
   }
 
   run () {

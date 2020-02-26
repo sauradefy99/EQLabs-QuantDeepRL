@@ -11,7 +11,7 @@ services:
     container_name: eq-trader-streamer-binance
     environment:
       - MARKET_ID=ETHBTC
-      - NODE_ENV=production
+      - NODE_ENV=development
       - EXCHANGE=binance
       - WEBSOCKET=true
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
@@ -26,7 +26,7 @@ services:
     container_name: eq-trader-streamer-kraken
     environment:
       - MARKET_ID=ETH/BTC
-      - NODE_ENV=production
+      - NODE_ENV=development
       - EXCHANGE=kraken
       - WEBSOCKET=false
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672

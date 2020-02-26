@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "ajv": "^6.12.0",
     "amqplib": "^0.5.5",
     "ccxt": "^1.22.84",
     "winston": "^3.2.1"
