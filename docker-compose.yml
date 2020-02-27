@@ -31,6 +31,18 @@ services:
       - WEBSOCKET=false
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
 
+  predictor:
+    build:
+      context: ./predictor
+      dockerfile: Dockerfile
+    links:
+      - rabbitmq
+      - redis
+    restart: on-failure
+    container_name: eq-trader-predictor
+    environment:
+      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
+
   executor-binance:
     build:
       context: ./executor
@@ -59,7 +71,7 @@ services:
     container_name: eq-trader-executor-kraken
     env_file: .krakensecrets
     environment:
-      - MARKET_ID=BTCETH
+      - MARKET_ID=ETH/BTC
       - NODE_ENV=development
       - EXCHANGE=kraken
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672

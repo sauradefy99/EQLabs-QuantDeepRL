@@ -4,7 +4,10 @@
       "$data": "cancel"
     }
   },
-  "id": {
+  "orderId": {
+    "type": "string"
+  },
+  "symbol": {
     "type": "string"
   }
 }

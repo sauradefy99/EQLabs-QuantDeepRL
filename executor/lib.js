@@ -49,11 +49,14 @@ class Exchange {
   async connectToRabbitMq () {
     return new Promise((resolve, reject) => {
       amqp.connect(this.rabbitMqHostAddr, (error0, connection) => {
+
         if (error0) {
           this.logger.error('Connection to RabbitMQ failed: ' + error0)
           reject(error0)
         }
+
         this.logger.info('Successfully connected to rabbitmq')
+
         connection.createChannel((error1, channel) => {
           if (error1) {
             this.logger.error('Creating a channel on RabbitMQ failed: ' + error1)
@@ -73,6 +76,7 @@ class Exchange {
 
           resolve(true)
         })
+
       })
     })
   }
@@ -93,23 +97,30 @@ class Exchange {
       return false
     }
 
+    let params = undefined
+    if (process.env.NODE_ENV==="test") {
+      params = {test: true}
+    }
+
     try {
       switch(json.operation) {
         case "cancel":
-          result = await this.exchange.cancelOrder(json.id)
-          this.logger.info("Order successfully canceled: " + result)
+          result = await this.exchange.cancelOrder(json.orderId, json.symbol)
+          this.logger.info("Order canceled: " + JSON.stringify(result))
           // TODO: Remove canceled order from open orders in redis
           break;
         case "create":
-          result = await this.exchange.createOrder(json.symbol, json.orderType, json.side, json.amount, json.price)
-          this.logger.info("Order successfully created: " + result)
+          result = await this.exchange.createOrder(json.symbol, json.orderType, json.side, json.amount, json.price, params)
+          this.logger.info("Order created: " + JSON.stringify(result))
           // TODO: Save created order to open orders in redis
           break;
         default:
           return false
       }
+      return result
     } catch(error) {
       this.logger.error("Error executing operation " + error)
+      return false
     }
   }
 
