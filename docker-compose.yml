@@ -41,7 +41,8 @@ services:
     restart: on-failure
     container_name: eq-trader-predictor
     environment:
-      - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
+      - RABBIT_MQ_HOST=rabbitmq
+      - RABBIT_MQ_PORT=5672
 
   executor-binance:
     build:
@@ -56,7 +57,7 @@ services:
     environment:
       - MARKET_ID=ETHBTC
       - NODE_ENV=development
-      - EXCHANGE=binance
+      - JOB_QUEUE=binance-jobs
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
       - REDIS_ADDR=redis:6379
 
@@ -73,7 +74,7 @@ services:
     environment:
       - MARKET_ID=ETH/BTC
       - NODE_ENV=development
-      - EXCHANGE=kraken
+      - JOB_QUEUE=kraken-jobs
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
       - REDIS_ADDR=redis:6379
 
