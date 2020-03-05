@@ -1,25 +1,16 @@
-const amqp = require('amqplib/callback_api')
-const winston = require('winston')
-const ccxws = require('ccxws')
-const ccxt = require('ccxt')
+const amqp = require('amqplib/callback_api');
+const winston = require('winston');
+const ccxws = require('ccxws');
+const ccxt = require('ccxt');
 const Ajv = require('ajv');
+const WebSocket = require('ws');
 
 const ajv = new Ajv()
 const schema = require('./schema.json')
 const validate = ajv.compile(schema)
 
 class L2Streamer {
-  constructor (exchange, rabbitMqHostAddr, market, logLevel) {
-    this.queue = exchange
-    this.rabbitMqHostAddr = rabbitMqHostAddr
-    this.market = market
-
-    this.streamingExchange = new ccxws[exchange]()
-    this.exchange = new ccxt[exchange]({
-      enableRateLimit: true
-    })
-    this.rabbitmq = undefined
-
+  constructor (exchange, rabbitMqHostAddr, market, logLevel, websocketPort) {
     this.logger = winston.createLogger({
       level: logLevel || 'info',
       defaultMeta: { service: 'streamer-' + exchange },
@@ -29,6 +20,24 @@ class L2Streamer {
         })
       ]
     })
+
+    this.queue = exchange
+    this.rabbitMqHostAddr = rabbitMqHostAddr
+    this.market = market
+
+    this.streamingExchange = new ccxws[exchange]()
+    this.exchange = new ccxt[exchange]({
+      enableRateLimit: true
+    })
+    this.rabbitmq = undefined
+    
+    this.ws = undefined
+    this.wss = new WebSocket.Server({ port: websocketPort });
+    
+    this.wss.on('connection', (ws) => {
+      this.ws = ws
+      this.logger.info("A new websocket client connected!")
+    });
 
     this.logger.info('Streamer started on queue: ', this.queue, this.rabbitMqHostAddr)
   }
@@ -62,7 +71,7 @@ class L2Streamer {
     } else {
       const snapshotString = JSON.stringify(snapshot)
       this.logger.debug('Snapshot received: ' + snapshotString)
-      return Buffer.from(snapshotString)
+      return snapshotString
     }
   }
 
@@ -101,7 +110,12 @@ class L2Streamer {
     this.streamingExchange.on('l2snapshot', snapshot => {
       const data = this.prepareL2SnapshotForSending(snapshot)
       if(data) {
-        this.rabbitmq.sendToQueue(this.queue, data)
+        this.rabbitmq.sendToQueue(this.queue, Buffer.from(data))
+        this.wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(data);
+          }
+        });
       }
     })
     this.streamingExchange.subscribeLevel2Snapshots(this.market)
@@ -113,7 +127,12 @@ class L2Streamer {
         const snapshot = await this.exchange.fetchL2OrderBook(this.market.id)
         const data = this.prepareL2SnapshotForSending(snapshot)
         if(data) {
-          this.rabbitmq.sendToQueue(this.queue, data)
+          this.rabbitmq.sendToQueue(this.queue, Buffer.from(data))
+          this.wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(data);
+            }
+          });
         }
       } catch (e) {
         this.logger.error(e)

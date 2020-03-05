@@ -2,8 +2,9 @@ import pika
 
 
 class Publisher(object):
-    def __init__(self, parameters):
+    def __init__(self, parameters, queue):
         self.parameters = parameters
+        self.queue = queue
 
     def connect(self):
         return pika.BlockingConnection(parameters=self.parameters)
@@ -11,12 +12,11 @@ class Publisher(object):
     def close(self):
         self.connection.close()
 
-    def consume_queue(self, queue_name, ack, receiver):
-        print("Trying to open a RabbitMQ consumer on queue", queue_name)
-        self.channel.basic_consume(
-            queue=queue_name, on_message_callback=receiver, auto_ack=ack)
-        self.channel.start_consuming()
+    def publish(self, queue_name, ack, receiver):
+        self.channel.basic_publish(
+            exchange='', routing_key='', body='Hello World!')
 
     def run(self):
         self.connection = self.connect()
         self.channel = self.connection.channel()
+        self.channel.queue_declare(queue=self.queue)

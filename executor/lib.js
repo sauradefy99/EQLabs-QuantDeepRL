@@ -124,9 +124,13 @@ class Exchange {
     }
   }
 
-  run () {
+  run (callback) {
     this.rabbitmq.consume(this.queue, (msg) => {
-      this.parseMessage(msg.content)
+      if(callback===undefined) {
+        this.parseMessage(msg.content)
+      } else if(typeof callback === "function") {
+        callback(msg.content)
+      }
     }, {
       noAck: true
     })

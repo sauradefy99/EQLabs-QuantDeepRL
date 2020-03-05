@@ -9,11 +9,14 @@ services:
       - rabbitmq
     restart: on-failure
     container_name: eq-trader-streamer-binance
+    ports:
+      - '8080:8080'
     environment:
       - MARKET_ID=ETHBTC
       - NODE_ENV=development
       - EXCHANGE=binance
       - WEBSOCKET=true
+      - OUTGOING_WEBSOCKET_PORT=8080
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
 
   streamer-kraken:
@@ -24,12 +27,32 @@ services:
       - rabbitmq
     restart: on-failure
     container_name: eq-trader-streamer-kraken
+    ports:
+      - '8081:8081'
     environment:
       - MARKET_ID=ETH/BTC
       - NODE_ENV=development
       - EXCHANGE=kraken
       - WEBSOCKET=false
+      - OUTGOING_WEBSOCKET_PORT=8081
       - RABBIT_MQ_ADDR=amqp://rabbitmq:5672
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    links:
+      - streamer-binance
+      - streamer-kraken
+    restart: on-failure
+    container_name: eq-trader-dashboard
+    ports:
+      - '3001:3000'
+    environment:
+      - KRAKEN_ADDR=ws://streamer-kraken:8080
+      - BINANCE_ADDR=ws://streamer-binance:8080
+      - CHOKIDAR_USEPOLLING=true
+      - NODE_ENV=development
 
   predictor:
     build:
