@@ -52,7 +52,6 @@ const App = () => {
     }
   
     wsKraken.onmessage = (msg) => {
-      console.log("Message from kraken received!")
       const parsed = JSON.parse(msg.data)
       if (parsed.asks.length > 0 && parsed.bids.length > 0) {
         setKrakenOrders(parseFloats(parsed))

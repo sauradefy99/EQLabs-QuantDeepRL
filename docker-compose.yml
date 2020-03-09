@@ -11,8 +11,10 @@ services:
     container_name: eq-trader-streamer-binance
     ports:
       - '8080:8080'
+    env_file: .binancesecrets
     environment:
       - MARKET_ID=ETHBTC
+      - DATAPOINTS=["L2_ORDER_BOOK, MY_TRADES"]
       - NODE_ENV=development
       - EXCHANGE=binance
       - WEBSOCKET=true
@@ -29,8 +31,10 @@ services:
     container_name: eq-trader-streamer-kraken
     ports:
       - '8081:8081'
+    env_file: .krakensecrets
     environment:
       - MARKET_ID=ETH/BTC
+      - DATAPOINTS=["L2_ORDER_BOOK, MY_TRADES"]
       - NODE_ENV=development
       - EXCHANGE=kraken
       - WEBSOCKET=false

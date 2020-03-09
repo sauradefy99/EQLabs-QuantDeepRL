@@ -118,13 +118,19 @@ class L2Streamer {
         });
       }
     })
+    this.streamingExchange.on('trade', trade => {
+      console.log(trade)
+    })
     this.streamingExchange.subscribeLevel2Snapshots(this.market)
+    this.streamingExchange.subscribeTrades(this.market)
   }
 
   async runPoller (interval) {
     while (true) {
       try {
         const snapshot = await this.exchange.fetchL2OrderBook(this.market.id)
+        const trades = await this.exchange.fetchTrades(this.market.id)
+        console.log(trades)
         const data = this.prepareL2SnapshotForSending(snapshot)
         if(data) {
           this.rabbitmq.sendToQueue(this.queue, Buffer.from(data))
